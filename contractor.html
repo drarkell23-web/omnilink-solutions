@@ -2,86 +2,66 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>OmniLink Dashboard</title>
+<title>OmniLink — Contractor Signup</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-body{font-family:Poppins,system-ui;background:#0b0a18;color:#fff;margin:0;padding:0}
-header{display:flex;justify-content:space-between;align-items:center;width:min(1200px,94vw);margin:24px auto}
-.badge{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;font-weight:900;
-  background:linear-gradient(135deg,#8a5cff,#6a4cff);color:#0b0620}
-.btn{background:linear-gradient(135deg,#8a5cff,#6a4cff);color:#0b0620;border:none;font-weight:700;
-  padding:10px 14px;border-radius:10px;cursor:pointer;transition:.3s}
-.btn:hover{transform:translateY(-2px)}
-.grid{width:min(1200px,94vw);margin:auto;display:grid;grid-template-columns:1.2fr 0.8fr;gap:22px}
-@media(max-width:900px){.grid{grid-template-columns:1fr}}
-.card{background:#18152f;border-radius:16px;padding:18px;box-shadow:0 6px 20px rgba(0,0,0,.3)}
-h2{margin-bottom:10px}
-label{display:block;margin:10px 0 4px;color:#bfc3e0}
-input,select{width:100%;padding:8px;border:none;border-radius:8px;background:#29244b;color:#fff}
-canvas{margin-top:12px;background:#1b1831;border-radius:12px}
+body{font-family:Poppins,system-ui;background:#0b0a18;color:#fff;margin:0;display:flex;min-height:100vh;align-items:center;justify-content:center}
+.card{background:#18152f;border-radius:16px;padding:28px;box-shadow:0 8px 26px rgba(0,0,0,.35);width:min(440px,94vw)}
+input,select{width:100%;padding:10px;margin:8px 0;background:#29244b;border:none;border-radius:10px;color:#fff}
+button{width:100%;padding:10px;background:linear-gradient(135deg,#8a5cff,#6a4cff);border:none;border-radius:10px;font-weight:700;color:#0b0620;cursor:pointer}
+button:hover{opacity:.92}
+h1{text-align:center;margin-bottom:8px}
+.small{color:#bfc3e0;font-size:13px;text-align:center}
 </style>
 </head>
 <body>
-<header>
- <div style="display:flex;align-items:center;gap:12px">
-   <div class="badge">OL</div><h1>Contractor Dashboard</h1>
- </div>
- <button class="btn" onclick="location.href='/'">Home</button>
-</header>
-
-<div class="grid">
- <div class="card">
-  <h2>👷 Profile / Register</h2>
-  <label>Business Name</label><input id="c_name">
-  <label>Category</label><select id="c_cat"></select>
-  <label>Area</label><input id="c_area">
-  <label>Phone</label><input id="c_phone">
-  <label>Email</label><input id="c_email">
-  <label>Rating</label><input id="c_rate" type="number" min="1" max="5" step="0.1" value="4.8">
-  <button class="btn" onclick="saveContractor()">Save</button>
-  <p id="msg" style="color:#23d5ab;display:none">✅ Saved!</p>
- </div>
- <div class="card">
-  <h2>📊 Analytics</h2>
-  <canvas id="chart" height="200"></canvas>
- </div>
-</div>
-
-<div class="card" style="width:min(1200px,94vw);margin:20px auto">
- <h2>📝 Leads / Jobs</h2>
- <div id="jobs"></div>
+<div class="card">
+  <h1>Join OmniLink</h1>
+  <div class="small">Provide your business details to get verified.</div>
+  <input id="cname" placeholder="Company Name">
+  <input id="cowner" placeholder="Owner Name">
+  <select id="cservice"></select>
+  <input id="carea" placeholder="Service Area">
+  <input id="cphone" placeholder="Phone">
+  <input id="ctelegram" placeholder="Your Telegram Chat ID (optional)">
+  <input id="cemail" placeholder="Email">
+  <input id="cpass" type="password" placeholder="Password">
+  <button onclick="signup()">Submit Application</button>
+  <div id="ok" class="small" style="display:none;color:#23d5ab;margin-top:8px">
+    ✅ Application submitted. We'll review and email your token soon.
+  </div>
 </div>
 
 <script>
-const CATS={"Home & Maintenance":["Plumbing","Electrical","Roofing","Painting","Handyman","Landscaping"],
-"Business & Consulting":["Marketing","Design","Accounting"],
-"Automotive":["Panel Beating","Tyres","Towing"],
-"Health & Wellness":["Training","Massage","Nutrition"]};
-const sel=document.getElementById('c_cat');
-for(const [g,list] of Object.entries(CATS)){const og=document.createElement('optgroup');og.label=g;list.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;og.appendChild(o)});sel.appendChild(og);}
-function saveContractor(){
- const me={id:Date.now(),name:c_name.value,category:c_cat.value,area:c_area.value,phone:c_phone.value,email:c_email.value,rating:c_rate.value};
- const store=JSON.parse(localStorage.getItem("omni_contractors")||"{}");
- store[me.category]=store[me.category]||[];store[me.category].push(me);
- localStorage.setItem("omni_contractors",JSON.stringify(store));
- msg.style.display='block';setTimeout(()=>msg.style.display='none',3000);
- renderJobs();drawChart();
+const SERVICES=["Plumbing","Electrical","Roofing","Painting","Carpentry","Handyman","Flooring","Landscaping","Security Systems","IT Support","Catering"];
+cservice.innerHTML=SERVICES.map(s=>`<option>${s}</option>`).join('');
+
+const ADMIN_BOT_TOKEN="YOUR_MASTER_BOT_TOKEN_HERE";   // your bot token
+const ADMIN_CHAT_ID="YOUR_MASTER_CHAT_ID_HERE";       // your chat id
+
+function signup(){
+  const name=cname.value.trim(), owner=cowner.value.trim(), service=cservice.value, area=carea.value.trim(), phone=cphone.value.trim(), email=cemail.value.trim(), pass=cpass.value.trim(), telegramId=ctelegram.value.trim();
+  if(!name||!owner||!service||!area||!phone||!email||!pass){alert("Please complete all fields.");return;}
+  
+  const id='C'+Math.random().toString(36).slice(2,8);
+  const data={id,name,owner,service,area,phone,email,telegramId};
+  
+  // Store locally
+  const db=JSON.parse(localStorage.getItem('omni_pending')||'[]');
+  db.push(data); localStorage.setItem('omni_pending',JSON.stringify(db));
+  
+  // Send Telegram alert to ADMIN
+  const msg=`🧱 *NEW CONTRACTOR SIGNUP*\nCompany: ${name}\nOwner: ${owner}\nService: ${service}\nArea: ${area}\nPhone: ${phone}\nEmail: ${email}\nTelegram ID: ${telegramId||'N/A'}`;
+  if(ADMIN_BOT_TOKEN && ADMIN_CHAT_ID){
+    fetch(`https://api.telegram.org/bot${ADMIN_BOT_TOKEN}/sendMessage`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({chat_id:ADMIN_CHAT_ID,parse_mode:'Markdown',text:msg})
+    });
+  }
+
+  ok.style.display='block';
+  cname.value=cowner.value=carea.value=cphone.value=cemail.value=cpass.value=ctelegram.value='';
 }
-function renderJobs(){
- const jobs=JSON.parse(localStorage.getItem("omni_jobs")||"[]");
- jobsEl.innerHTML=jobs.map(j=>`<div style="margin:8px 0;padding:10px;background:#231f41;border-radius:10px">
-  <b>${j.service}</b> — ${j.name} 📞${j.phone}<br><small>${j.area}</small></div>`).join('')||'<p>No jobs yet.</p>';
-}
-const jobsEl=document.getElementById('jobs');renderJobs();
-/* analytics */
-function drawChart(){
- const ctx=document.getElementById('chart');
- new Chart(ctx,{type:'bar',data:{labels:['Leads','Sales','Conversion %'],
- datasets:[{label:'This Month',data:[Math.random()*50+20,Math.random()*20+10,Math.random()*40+30],
- backgroundColor:['#8a5cff','#6a4cff','#23d5ab']}]},options:{plugins:{legend:{display:false}}}});
-}
-drawChart();
 </script>
 </body>
 </html>
