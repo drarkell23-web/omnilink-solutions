@@ -38,20 +38,19 @@ header{display:flex;justify-content:space-between;align-items:center;padding:20p
 .bubble:hover{background:linear-gradient(135deg,var(--brand),var(--brand2));transform:scale(1.07);color:#0a061b}
 
 /* Chat */
-.chat{position:fixed;bottom:100px;right:20px;background:#18152f;border:1px solid #ffffff1a;border-radius:14px;padding:15px;width:320px;max-height:450px;display:none;flex-direction:column;box-shadow:var(--shadow);z-index:50}
+.chat{position:fixed;bottom:100px;right:20px;background:#18152f;border:1px solid #ffffff1a;border-radius:14px;padding:15px;width:340px;max-height:500px;display:none;flex-direction:column;box-shadow:var(--shadow);z-index:50}
 .chat-log{flex:1;overflow-y:auto;font-size:14px;margin-bottom:10px}
 .msg{background:var(--chip);padding:8px 10px;border-radius:10px;margin-bottom:6px;width:fit-content;max-width:80%}
 .bot{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#0e0727}
 .user{align-self:flex-end;background:#2e2b48}
 .chat-input{border:none;border-radius:10px;padding:10px;width:100%;background:#29244b;color:#fff}
 
-/* Review Popup */
-.review-popup{position:fixed;inset:0;background:#0009;display:none;place-items:center;z-index:200;}
-.review-box{background:#18152f;padding:20px;border-radius:18px;width:min(360px,94vw);box-shadow:var(--shadow);text-align:center;}
-.review-box h3{margin-bottom:10px;}
-.stars{font-size:22px;color:#FFD700;cursor:pointer;margin-bottom:8px;}
-textarea{width:100%;padding:10px;border:none;border-radius:10px;background:#29244b;color:#fff;}
-.submit-btn{margin-top:10px;background:linear-gradient(135deg,var(--brand),var(--brand2));border:none;color:#0a061b;font-weight:700;padding:10px 16px;border-radius:10px;cursor:pointer;}
+/* Local Contractors Popup */
+.contractors-popup{position:fixed;inset:0;background:#000a;display:none;place-items:center;z-index:90;}
+.contractors-box{background:#18152f;padding:20px;border-radius:18px;width:min(400px,94vw);box-shadow:var(--shadow);text-align:center;}
+.contractors-box h3{margin-bottom:10px;}
+.contractors-list{margin-top:10px;text-align:left;}
+.contractors-list div{background:#29244b;margin:8px 0;padding:10px;border-radius:8px;}
 
 /* Confetti */
 canvas#confetti{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:100}
@@ -66,7 +65,7 @@ canvas#confetti{position:fixed;top:0;left:0;width:100%;height:100%;pointer-event
     <div class="badge">OL</div>
     <div>
       <h1>OmniLink Solutions</h1>
-      <p>The Best & Most Affordable Service Network</p>
+      <p>Smart, Simple & Affordable Solutions for Every Service</p>
     </div>
   </div>
   <button class="contractor-btn" onclick="window.location='contractor.html'">🧰 Contractors</button>
@@ -76,33 +75,29 @@ canvas#confetti{position:fixed;top:0;left:0;width:100%;height:100%;pointer-event
   <h2>Choose the service you need today!</h2>
 </section>
 
-<section class="services">
-  <div class="category"><h2>🏠 Maintenance</h2><div class="grid" id="maintenance"></div></div>
-  <div class="category"><h2>🏢 Property & Construction</h2><div class="grid" id="property"></div></div>
-  <div class="category"><h2>💼 Technical & Professional</h2><div class="grid" id="tech"></div></div>
-</section>
+<section class="services" id="serviceContainer"></section>
 
+<!-- Chat -->
 <div class="chat" id="chat">
   <div class="chat-log" id="chatLog"></div>
   <input id="chatInput" class="chat-input" placeholder="Type your message..." autocomplete="off">
 </div>
 
-<!-- Review Popup -->
-<div class="review-popup" id="reviewPopup">
-  <div class="review-box">
-    <h3>⭐ Leave a Review</h3>
-    <div class="stars" id="stars">★★★★★</div>
-    <textarea id="reviewText" placeholder="Share your experience..."></textarea>
-    <button class="submit-btn" onclick="submitReview()">Submit Review</button>
+<!-- Contractors Popup -->
+<div class="contractors-popup" id="contractorPopup">
+  <div class="contractors-box">
+    <h3>🏆 Top Contractors Near You</h3>
+    <div class="contractors-list" id="contractorList"></div>
+    <button class="contractor-btn" onclick="closePopup()">Close</button>
   </div>
 </div>
 
-<footer class="footer">© 2025 OmniLink Solutions — Smart, Simple & Connected</footer>
+<footer class="footer">© 2025 OmniLink Solutions — Smart Service Network</footer>
 
 <script>
-const TELEGRAM_BOT_TOKEN = ""; // Your Telegram bot token
-const TELEGRAM_CHAT_IDS = [""]; // Your chat IDs
-const SHEET_WEBHOOK = ""; // Google Apps Script Web App URL
+const TELEGRAM_BOT_TOKEN = ""; // Paste your Telegram bot token here
+const TELEGRAM_CHAT_IDS = [""]; // Paste your Telegram chat IDs
+const SHEET_WEBHOOK = ""; // Paste your Google Apps Script URL
 
 async function sendTelegram(msg){
   const url=`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
@@ -127,58 +122,66 @@ function confettiBurst(){
 }
 
 /* Services */
-const maintenance=["Plumbing","Electrical","Roofing","Painting","Cleaning","Carpentry","Flooring","Landscaping","Pest Control","Solar","Pool Care","Air Conditioning"];
-const property=["Construction","Property Sales","Security Systems","Renovations","Real Estate","Windows & Doors","Tiling","Paving"];
-const tech=["IT Support","Web Design","CCTV","Networking","Appliance Repair","Automotive","Software Setup","Graphic Design"];
-function fillGrid(id,arr){
-  const grid=document.getElementById(id);
-  arr.forEach(s=>{
-    const d=document.createElement('div');
-    d.className='bubble';
-    d.textContent=s;
-    d.onclick=()=>startChat(s);
-    grid.appendChild(d);
-  });
+const categories={
+ "Home & Maintenance":["Plumbing","Electrical","Roofing","Painting","Cleaning","Carpentry","Flooring","Landscaping","Pest Control","Solar Installation","Air Conditioning","Pool Maintenance","Handyman Services"],
+ "Property & Construction":["General Building","Renovations","Property Sales","Security Systems","Windows & Doors","Real Estate","Paving","Tiling","Waterproofing"],
+ "Technical & IT":["CCTV Setup","IT Support","Web Design","Networking","Software Installations","Data Recovery","Tech Repairs","Cloud Backup"],
+ "Automotive & Transport":["Vehicle Servicing","Towing","Tyre Replacement","Panel Beating","Auto Electrical","Truck Repairs","Car Wash"],
+ "Cleaning & Hospitality":["Office Cleaning","Home Cleaning","Pest Control","Janitorial","Waste Removal","Laundry","Event Setup"],
+ "Health & Wellness":["Gym Installation","Physiotherapy","Nutrition","Personal Training","Medical Equipment Repair"],
+ "Business & Consulting":["Accounting","Marketing","Insurance","Financial Consulting","Printing","Courier","Staffing"],
+ "Creative & Media":["Photography","Videography","Branding","Social Media Management","Interior Design","Graphic Design","Advertising"],
+ "Education & Training":["Tutoring","Driving Schools","Language Training","Vocational Training","Online Courses"],
+ "Security & Safety":["Fire Systems","Alarm Systems","Guarding","Surveillance","Emergency Repairs","Locksmith Services"]
+};
+
+const serviceContainer=document.getElementById('serviceContainer');
+for(const [title,services] of Object.entries(categories)){
+ const div=document.createElement('div');div.className='category';
+ div.innerHTML=`<h2>${title}</h2><div class="grid">${services.map(s=>`<div class='bubble' onclick='startChat("${s}")'>${s}</div>`).join('')}</div>`;
+ serviceContainer.appendChild(div);
 }
-fillGrid('maintenance',maintenance);
-fillGrid('property',property);
-fillGrid('tech',tech);
 
 /* Chatbot */
 const chat=document.getElementById('chat'),chatLog=document.getElementById('chatLog'),chatInput=document.getElementById('chatInput');
 let step=0,userData={},service="";
 function addMsg(text,cls="bot"){const d=document.createElement('div');d.className='msg '+cls;d.textContent=text;chatLog.appendChild(d);chatLog.scrollTop=chatLog.scrollHeight;}
-function botSay(t){addMsg(t,'bot');}
-function startChat(s){service=s;chat.style.display='flex';chatLog.innerHTML='';userData={};step=0;botSay(`👋 Hi there! Let's get your ${s} request started.`);setTimeout(()=>botSay("What's your full name?"),1000);}
+async function botSay(t,delay=800){await new Promise(r=>setTimeout(r,delay));addMsg(t,'bot');}
+function startChat(s){
+ service=s;chat.style.display='flex';chatLog.innerHTML='';userData={};step=0;
+ botSay(`👋 Hey there! I'm Omni — your smart assistant for ${s}.`);
+ botSay("Can I take your *name* please?");
+}
 chatInput.addEventListener('keydown',async e=>{
   if(e.key!=="Enter")return;
   const val=chatInput.value.trim();if(!val)return;addMsg(val,'user');chatInput.value='';
   switch(step){
-    case 0:userData.name=val;botSay(`Nice to meet you, ${val}! 📞 What's your phone number?`);step++;break;
-    case 1:userData.phone=val;botSay("📍 Which area are you in?");step++;break;
-    case 2:userData.area=val;botSay("📝 Please describe what you need help with.");step++;break;
+    case 0:userData.name=val;await botSay(`Nice to meet you, ${val}! 📞 Can I get your phone number?`);step++;break;
+    case 1:userData.phone=val;await botSay("📍 Awesome! What area are you in?");step++;break;
+    case 2:userData.area=val;await botSay("📝 Great — tell me a bit about what you need help with.");step++;break;
     case 3:userData.notes=val;
       const msg=`🧰 *NEW CLIENT LEAD*\nService: ${service}\n👤 ${userData.name}\n📞 ${userData.phone}\n📍 ${userData.area}\n📝 ${userData.notes}\n🕒 ${new Date().toLocaleString()}`;
-      await sendTelegram(msg);
-      await saveToSheet('lead',{service,...userData});
-      botSay("✅ Thank you! A verified contractor will contact you shortly.");
-      confettiBurst();setTimeout(()=>chat.style.display='none',3500);
-      setTimeout(()=>openReview(),4000);
+      await sendTelegram(msg);await saveToSheet('lead',{service,...userData});
+      await botSay("✅ Got it! I’m matching you with local contractors...");
+      confettiBurst();
+      showContractors();
+      setTimeout(()=>chat.style.display='none',4000);
       break;
   }
 });
 
-/* Review Popup */
-const popup=document.getElementById('reviewPopup');
-const starsEl=document.getElementById('stars');
-let stars=5;
-starsEl.onclick=()=>{stars=stars===5?4:5;starsEl.textContent='★'.repeat(stars)+'☆'.repeat(5-stars);}
-function openReview(){popup.style.display='grid';}
-async function submitReview(){
-  const text=document.getElementById('reviewText').value.trim();
-  await saveToSheet('review',{Reviewer:userData.name||"Anonymous",Stars:stars,Text:text});
-  popup.style.display='none';alert('Thank you for your feedback!');
+/* Contractors Popup */
+const contractorPopup=document.getElementById('contractorPopup');
+function showContractors(){
+ const contractorList=document.getElementById('contractorList');
+ contractorList.innerHTML=`
+   <div>🔧 ${service} Experts Inc. — 4.9⭐</div>
+   <div>🧰 ${service} Masters SA — 4.7⭐</div>
+   <div>🏆 ${service} ProFix Team — 4.8⭐</div>
+ `;
+ contractorPopup.style.display='grid';
 }
+function closePopup(){contractorPopup.style.display='none';}
 </script>
 </body>
 </html>
