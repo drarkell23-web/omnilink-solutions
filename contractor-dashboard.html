@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>OmniLink Contractor Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+body{font-family:Poppins,system-ui;background:#0b0a18;color:#fff;margin:0}
+header{display:flex;justify-content:space-between;align-items:center;width:min(1200px,94vw);margin:22px auto}
+.badge{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,#8a5cff,#6a4cff);color:#0b0620;font-weight:900}
+.btn{background:linear-gradient(135deg,#8a5cff,#6a4cff);color:#0b0620;border:none;font-weight:700;padding:10px 14px;border-radius:10px;cursor:pointer}
+.grid{width:min(1200px,94vw);margin:auto;display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.card{background:#18152f;border-radius:16px;padding:18px;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+</style>
+</head>
+<body>
+<header>
+ <div style="display:flex;align-items:center;gap:12px">
+  <div class="badge">OL</div>
+  <h1>Contractor Dashboard</h1>
+ </div>
+ <button class="btn" onclick="logout()">Logout</button>
+</header>
+
+<div class="grid">
+ <div class="card">
+   <h2>📋 Leads Received</h2>
+   <div id="leads"></div>
+ </div>
+ <div class="card">
+   <h2>📈 Weekly Stats</h2>
+   <canvas id="chart" height="200"></canvas>
+ </div>
+</div>
+
+<script>
+const token=localStorage.getItem('omni_contractor_token');
+if(!token){location.href='contractor-login.html';}
+
+function logout(){localStorage.removeItem('omni_contractor_token');location.href='contractor-login.html';}
+
+const data=JSON.parse(localStorage.getItem('omni_jobs')||'{}');
+const myJobs=data[token]||[];
+document.getElementById('leads').innerHTML=myJobs.length?
+  myJobs.map(j=>`<div><b>${j.service}</b> — ${j.area}<br>${j.name} — ${j.phone}<br>${j.desc}</div>`).join(''):
+  "<p>No leads yet.</p>";
+
+new Chart(document.getElementById('chart'),{
+  type:'bar',
+  data:{labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],datasets:[{data:[2,3,4,5,2,3,1].map(x=>x*1000),backgroundColor:'#8a5cff'}]},
+  options:{plugins:{legend:{display:false}}}
+});
+</script>
+</body>
+</html>
