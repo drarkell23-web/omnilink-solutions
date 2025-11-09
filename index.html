@@ -17,17 +17,13 @@ body{
   background:linear-gradient(160deg,var(--bg1),var(--bg2));overflow-x:hidden;
 }
 h1{margin:0;font-size:clamp(22px,3.5vw,36px);}
-button,input,textarea{font-family:inherit;}
-.hero{width:min(1200px,94vw);margin:30px auto;padding:10px;position:relative;text-align:center;}
+.hero{width:min(1200px,94vw);margin:30px auto;padding:10px;text-align:center;position:relative;}
 .badge{width:60px;height:60px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,var(--brand),var(--brand2));font-weight:900;color:#0a061b;box-shadow:0 10px 26px #8a5cff55;margin:auto;}
 .sub{color:var(--muted);margin-top:4px;font-size:15px;}
-.contractor-btn, .dash-btn{position:absolute;top:10px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#0a061b;border:none;font-weight:800;padding:10px 16px;border-radius:10px;cursor:pointer;box-shadow:var(--shadow);}
-.contractor-btn{right:20px;}
-.dash-btn{right:160px;}
-.contractor-btn:hover,.dash-btn:hover{opacity:0.9;}
+.contractor-btn{position:absolute;top:10px;right:20px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#0a061b;border:none;font-weight:800;padding:10px 16px;border-radius:10px;cursor:pointer;box-shadow:var(--shadow);}
+.contractor-btn:hover{opacity:0.9;}
 .service-section{width:min(1200px,94vw);margin:auto;text-align:center;margin-top:40px;}
 .service-title{font-size:24px;font-weight:700;margin-bottom:20px;}
-.category{font-size:20px;font-weight:700;margin:25px 0 15px;}
 .services-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:15px;}
 .service-bubble{background:#231f41;color:#fff;padding:14px 12px;border-radius:50px;cursor:pointer;font-weight:600;box-shadow:0 3px 6px rgba(0,0,0,.3);transition:.3s;}
 .service-bubble:hover{background:linear-gradient(135deg,var(--brand),var(--brand2));transform:scale(1.07);}
@@ -43,26 +39,16 @@ canvas#confetti{position:fixed;top:0;left:0;width:100%;height:100%;pointer-event
 </head>
 <body>
 <canvas id="confetti"></canvas>
-
 <section class="hero">
   <div class="badge">OL</div>
-  <button class="dash-btn" onclick="window.location.href='login.html'">Dashboard</button>
-  <button class="contractor-btn" onclick="window.location.href='contractor.html'">Contractors</button>
+  <button class="contractor-btn" onclick="window.location.href='contractors.html'">Contractors</button>
   <h1>OmniLink Solutions</h1>
   <p class="sub">Smart, Simple & Affordable Solutions for Every Service</p>
 </section>
 
 <section class="service-section">
   <div class="service-title">Choose the service you need today!</div>
-
-  <div class="category">🏠 Home & Maintenance</div>
-  <div class="services-grid" id="homeServices"></div>
-
-  <div class="category">🏢 Property & Real Estate</div>
-  <div class="services-grid" id="propertyServices"></div>
-
-  <div class="category">🧠 Business & Professional</div>
-  <div class="services-grid" id="businessServices"></div>
+  <div class="services-grid" id="servicesGrid"></div>
 </section>
 
 <div class="chat-popup" id="chatPopup">
@@ -72,94 +58,35 @@ canvas#confetti{position:fixed;top:0;left:0;width:100%;height:100%;pointer-event
 </div>
 
 <div class="footer">© 2025 OmniLink Solutions — Smart Service Network</div>
-
 <script src="confetti.js"></script>
 <script>
-// TELEGRAM SETUP
-const TELEGRAM_BOT_TOKEN = ""; // paste your bot token
-const ADMIN_CHAT_IDS = [""];   // your chat ID
+const TELEGRAM_BOT_TOKEN = "";
+const ADMIN_CHAT_ID = "";
 
-// send Telegram message
-async function sendTelegram(msg, targetIds = ADMIN_CHAT_IDS){
-  const urlBase=`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
-  for(const id of targetIds){
-    await fetch(urlBase,{method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:id,text:msg,parse_mode:"Markdown"})});
-  }
+async function sendTelegram(msg){
+  if(!TELEGRAM_BOT_TOKEN || !ADMIN_CHAT_ID) return console.warn("Telegram not configured");
+  const url=`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+  await fetch(url,{method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:ADMIN_CHAT_ID,text:msg})});
 }
 
-// SERVICE DATA
-const homeServices=["Plumbing","Electrical","Roofing","Painting","Carpentry","Handyman","Flooring","Pest Control","Landscaping","Solar Installation","Security Systems","Waterproofing","Appliance Repair","Air Conditioning"];
-const propertyServices=["Property Sales","Rentals","Valuations","Estate Management","Developments","Architecture","Interior Design","Land Surveying"];
-const businessServices=["Cleaning","Renovations","CCTV Installation","Fire Safety","IT Support","Waste Disposal","Locksmith","Geyser Repairs","Water Supply","Paving","Automotive","Pest Control","Construction","Demolition","Masonry","Fencing","Window Cleaning"];
+// Services
+const services=["Plumbing","Electrical","Roofing","Painting","Carpentry","Handyman","Flooring","Pest Control","Landscaping","Solar Installation","Security Systems","Waterproofing","Appliance Repair","Air Conditioning","Cleaning","IT Support","Geyser Repairs","Locksmith","Window Cleaning"];
+const grid=document.getElementById('servicesGrid');
+services.forEach(s=>{const d=document.createElement('div');d.className='service-bubble';d.textContent=s;d.onclick=()=>startChat(s);grid.appendChild(d);});
 
-// BUILD SERVICE BUBBLES
-function buildGrid(list, id){
-  const grid=document.getElementById(id);
-  list.forEach(s=>{
-    const div=document.createElement('div');
-    div.className='service-bubble';
-    div.textContent=s;
-    div.onclick=()=>startChat(s);
-    grid.appendChild(div);
-  });
-}
-buildGrid(homeServices,'homeServices');
-buildGrid(propertyServices,'propertyServices');
-buildGrid(businessServices,'businessServices');
-
-// CHATBOT
-const chatPopup=document.getElementById('chatPopup'),
-      chatLog=document.getElementById('chatLog'),
-      chatInput=document.getElementById('chatInput');
-let chatStep=0,userData={},currentService="";
-
-function addMsg(txt,cls='bot'){
-  const d=document.createElement('div');
-  d.className='chat-msg '+cls;
-  d.textContent=txt;
-  chatLog.appendChild(d);
-  chatLog.scrollTop=chatLog.scrollHeight;
-}
-function botSay(txt){addMsg(txt,'bot');}
-function startChat(service){
-  currentService=service;
-  chatPopup.style.display='flex';
-  chatLog.innerHTML='';
-  chatStep=0;
-  userData={};
-  botSay(`Hi 👋 I'm Omni Assistant. Let's get your *${service}* request started!`);
-  setTimeout(()=>botSay("What's your full name?"),1000);
-}
+// Chatbot
+const chatPopup=document.getElementById('chatPopup'),chatLog=document.getElementById('chatLog'),chatInput=document.getElementById('chatInput');
+let step=0,user={},service="";
+function msg(t,c='bot'){const d=document.createElement('div');d.className='chat-msg '+c;d.textContent=t;chatLog.appendChild(d);chatLog.scrollTop=chatLog.scrollHeight;}
+function startChat(s){service=s;chatPopup.style.display='flex';chatLog.innerHTML='';step=0;user={};msg(`Hi 👋 I'm Omni Assistant. Let's get your ${s} request started.`);setTimeout(()=>msg("What's your full name?"),800);}
 chatInput.addEventListener('keydown',async e=>{
   if(e.key!=="Enter")return;
-  const val=chatInput.value.trim();
-  if(!val)return;
-  addMsg(val,'user');
-  chatInput.value='';
-  switch(chatStep){
-    case 0:userData.name=val;botSay(`Nice to meet you, ${val}! 📞 What's your phone number?`);chatStep++;break;
-    case 1:userData.phone=val;botSay("📍 What area are you located in?");chatStep++;break;
-    case 2:userData.area=val;botSay("📝 Briefly describe your issue or request.");chatStep++;break;
-    case 3:
-      userData.notes=val;
-      botSay("Great! Finding available contractors near you...");
-      setTimeout(()=>{
-        const fakeContractors=["ProFix Plumbing","HandySmith Maintenance","Ace Electrical","PlumbRite Solutions","Urban Handyman"];
-        const options=fakeContractors.map((c,i)=>`\n${i+1}. ${c}`).join('');
-        botSay(`Here are available options:\n${options}\n\nPlease type the number to choose your preferred contractor.`);
-        chatStep++;
-      },1500);
-      break;
-    case 4:
-      const choice=parseInt(val);
-      if(isNaN(choice)||choice<1||choice>5){botSay("❌ Invalid choice. Please type a number between 1–5.");return;}
-      userData.contractor=choice;
-      const msg=`🧰 *NEW SERVICE LEAD*\nService: ${currentService}\n👤 Name: ${userData.name}\n📞 Phone: ${userData.phone}\n📍 Area: ${userData.area}\n🧱 Contractor: ${["ProFix Plumbing","HandySmith Maintenance","Ace Electrical","PlumbRite Solutions","Urban Handyman"][choice-1]}\n📝 Notes: ${userData.notes}\n🕒 ${new Date().toLocaleString()}`;
-      await sendTelegram(msg);
-      botSay("✅ Your request has been sent! The contractor will contact you shortly.");
-      confettiBurst();
-      setTimeout(()=>{chatPopup.style.display='none';},2500);
-      break;
+  const v=chatInput.value.trim();if(!v)return;msg(v,'user');chatInput.value='';
+  switch(step){
+    case 0:user.name=v;msg(`Nice to meet you, ${v}! 📞 Phone number?`);step++;break;
+    case 1:user.phone=v;msg("📍 Area or suburb?");step++;break;
+    case 2:user.area=v;msg("📝 Describe what you need help with.");step++;break;
+    case 3:user.desc=v;msg("✅ Thanks! Your request has been sent to OmniLink.");confettiBurst();await sendTelegram(`🧰 NEW LEAD\nService: ${service}\nName: ${user.name}\nPhone: ${user.phone}\nArea: ${user.area}\nDesc: ${user.desc}`);setTimeout(()=>chatPopup.style.display='none',2000);break;
   }
 });
 </script>
