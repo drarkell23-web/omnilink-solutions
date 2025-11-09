@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>OmniLink Solutions — Smart Service Network</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg1:#0b0a18; --bg2:#141229; --ink:#f6f7fb; --muted:#c6c9de;
+  --brand:#8a5cff; --brand2:#6a4cff; --chip:#231f41; --shadow:0 14px 32px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Poppins,system-ui;
+  background:linear-gradient(160deg,var(--bg1),var(--bg2));
+  color:var(--ink);overflow-x:hidden;
+}
+h1{font-size:clamp(22px,3.5vw,36px);margin:0}
+button,input,textarea{font-family:inherit}
+
+/* Header */
+header{display:flex;justify-content:space-between;align-items:center;padding:20px 0;width:min(1200px,94vw);margin:auto;}
+.badge{width:60px;height:60px;border-radius:16px;background:linear-gradient(135deg,var(--brand),var(--brand2));display:grid;place-items:center;font-weight:900;color:#0a061b;box-shadow:0 10px 26px #8a5cff55}
+.contractor-btn{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#0a061b;border:none;font-weight:800;padding:10px 16px;border-radius:10px;cursor:pointer;box-shadow:var(--shadow)}
+.contractor-btn:hover{opacity:0.9}
+
+/* Hero */
+.hero{text-align:center;margin-top:10px}
+.hero p{color:var(--muted);margin-top:6px}
+
+/* Services */
+.services{margin-top:30px;width:min(1200px,94vw);margin:auto;}
+.category{margin-top:40px}
+.category h2{margin-bottom:12px;font-size:22px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:15px}
+.bubble{background:#231f41;color:#fff;padding:14px 12px;border-radius:50px;cursor:pointer;font-weight:600;text-align:center;box-shadow:0 3px 6px rgba(0,0,0,.3);transition:.3s}
+.bubble:hover{background:linear-gradient(135deg,var(--brand),var(--brand2));transform:scale(1.07);color:#0a061b}
+
+/* Chat */
+.chat{position:fixed;bottom:100px;right:20px;background:#18152f;border:1px solid #ffffff1a;border-radius:14px;padding:15px;width:320px;max-height:450px;display:none;flex-direction:column;box-shadow:var(--shadow);z-index:50}
+.chat-log{flex:1;overflow-y:auto;font-size:14px;margin-bottom:10px}
+.msg{background:var(--chip);padding:8px 10px;border-radius:10px;margin-bottom:6px;width:fit-content;max-width:80%}
+.bot{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#0e0727}
+.user{align-self:flex-end;background:#2e2b48}
+.chat-input{border:none;border-radius:10px;padding:10px;width:100%;background:#29244b;color:#fff}
+
+/* Review Popup */
+.review-popup{position:fixed;inset:0;background:#0009;display:none;place-items:center;z-index:200;}
+.review-box{background:#18152f;padding:20px;border-radius:18px;width:min(360px,94vw);box-shadow:var(--shadow);text-align:center;}
+.review-box h3{margin-bottom:10px;}
+.stars{font-size:22px;color:#FFD700;cursor:pointer;margin-bottom:8px;}
+textarea{width:100%;padding:10px;border:none;border-radius:10px;background:#29244b;color:#fff;}
+.submit-btn{margin-top:10px;background:linear-gradient(135deg,var(--brand),var(--brand2));border:none;color:#0a061b;font-weight:700;padding:10px 16px;border-radius:10px;cursor:pointer;}
+
+/* Confetti */
+canvas#confetti{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:100}
+.footer{text-align:center;margin:40px 0;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+
+<header>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="badge">OL</div>
+    <div>
+      <h1>OmniLink Solutions</h1>
+      <p>The Best & Most Affordable Service Network</p>
+    </div>
+  </div>
+  <button class="contractor-btn" onclick="window.location='contractor.html'">🧰 Contractors</button>
+</header>
+
+<section class="hero">
+  <h2>Choose the service you need today!</h2>
+</section>
+
+<section class="services">
+  <div class="category"><h2>🏠 Maintenance</h2><div class="grid" id="maintenance"></div></div>
+  <div class="category"><h2>🏢 Property & Construction</h2><div class="grid" id="property"></div></div>
+  <div class="category"><h2>💼 Technical & Professional</h2><div class="grid" id="tech"></div></div>
+</section>
+
+<div class="chat" id="chat">
+  <div class="chat-log" id="chatLog"></div>
+  <input id="chatInput" class="chat-input" placeholder="Type your message..." autocomplete="off">
+</div>
+
+<!-- Review Popup -->
+<div class="review-popup" id="reviewPopup">
+  <div class="review-box">
+    <h3>⭐ Leave a Review</h3>
+    <div class="stars" id="stars">★★★★★</div>
+    <textarea id="reviewText" placeholder="Share your experience..."></textarea>
+    <button class="submit-btn" onclick="submitReview()">Submit Review</button>
+  </div>
+</div>
+
+<footer class="footer">© 2025 OmniLink Solutions — Smart, Simple & Connected</footer>
+
+<script>
+const TELEGRAM_BOT_TOKEN = ""; // Your Telegram bot token
+const TELEGRAM_CHAT_IDS = [""]; // Your chat IDs
+const SHEET_WEBHOOK = ""; // Google Apps Script Web App URL
+
+async function sendTelegram(msg){
+  const url=`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+  for(const id of TELEGRAM_CHAT_IDS){
+    await fetch(url,{method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:id,text:msg,parse_mode:"Markdown"})});
+  }
+}
+async function saveToSheet(type,payload){
+  if(!SHEET_WEBHOOK)return;
+  await fetch(SHEET_WEBHOOK,{method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify({type,payload})});
+}
+
+/* Confetti */
+const canvas=document.getElementById('confetti'),ctx=canvas.getContext('2d');
+function resize(){canvas.width=innerWidth;canvas.height=innerHeight;}resize();window.addEventListener('resize',resize);
+function confettiBurst(){
+ const colors=['#8a5cff','#6a4cff','#23d5ab','#7ee6d5'];
+ const parts=Array.from({length:100},()=>({x:innerWidth/2,y:innerHeight,r:3+Math.random()*5,dx:-6+Math.random()*12,dy:-12-Math.random()*6,color:colors[Math.floor(Math.random()*colors.length)],life:120}));
+ let frame=0;(function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);
+ for(const p of parts){ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,2*Math.PI);ctx.fillStyle=p.color;ctx.fill();p.x+=p.dx;p.y+=p.dy;p.dy+=0.2;p.life--;}
+ frame++;if(frame<120){requestAnimationFrame(draw);}else{ctx.clearRect(0,0,canvas.width,canvas.height);}})();
+}
+
+/* Services */
+const maintenance=["Plumbing","Electrical","Roofing","Painting","Cleaning","Carpentry","Flooring","Landscaping","Pest Control","Solar","Pool Care","Air Conditioning"];
+const property=["Construction","Property Sales","Security Systems","Renovations","Real Estate","Windows & Doors","Tiling","Paving"];
+const tech=["IT Support","Web Design","CCTV","Networking","Appliance Repair","Automotive","Software Setup","Graphic Design"];
+function fillGrid(id,arr){
+  const grid=document.getElementById(id);
+  arr.forEach(s=>{
+    const d=document.createElement('div');
+    d.className='bubble';
+    d.textContent=s;
+    d.onclick=()=>startChat(s);
+    grid.appendChild(d);
+  });
+}
+fillGrid('maintenance',maintenance);
+fillGrid('property',property);
+fillGrid('tech',tech);
+
+/* Chatbot */
+const chat=document.getElementById('chat'),chatLog=document.getElementById('chatLog'),chatInput=document.getElementById('chatInput');
+let step=0,userData={},service="";
+function addMsg(text,cls="bot"){const d=document.createElement('div');d.className='msg '+cls;d.textContent=text;chatLog.appendChild(d);chatLog.scrollTop=chatLog.scrollHeight;}
+function botSay(t){addMsg(t,'bot');}
+function startChat(s){service=s;chat.style.display='flex';chatLog.innerHTML='';userData={};step=0;botSay(`👋 Hi there! Let's get your ${s} request started.`);setTimeout(()=>botSay("What's your full name?"),1000);}
+chatInput.addEventListener('keydown',async e=>{
+  if(e.key!=="Enter")return;
+  const val=chatInput.value.trim();if(!val)return;addMsg(val,'user');chatInput.value='';
+  switch(step){
+    case 0:userData.name=val;botSay(`Nice to meet you, ${val}! 📞 What's your phone number?`);step++;break;
+    case 1:userData.phone=val;botSay("📍 Which area are you in?");step++;break;
+    case 2:userData.area=val;botSay("📝 Please describe what you need help with.");step++;break;
+    case 3:userData.notes=val;
+      const msg=`🧰 *NEW CLIENT LEAD*\nService: ${service}\n👤 ${userData.name}\n📞 ${userData.phone}\n📍 ${userData.area}\n📝 ${userData.notes}\n🕒 ${new Date().toLocaleString()}`;
+      await sendTelegram(msg);
+      await saveToSheet('lead',{service,...userData});
+      botSay("✅ Thank you! A verified contractor will contact you shortly.");
+      confettiBurst();setTimeout(()=>chat.style.display='none',3500);
+      setTimeout(()=>openReview(),4000);
+      break;
+  }
+});
+
+/* Review Popup */
+const popup=document.getElementById('reviewPopup');
+const starsEl=document.getElementById('stars');
+let stars=5;
+starsEl.onclick=()=>{stars=stars===5?4:5;starsEl.textContent='★'.repeat(stars)+'☆'.repeat(5-stars);}
+function openReview(){popup.style.display='grid';}
+async function submitReview(){
+  const text=document.getElementById('reviewText').value.trim();
+  await saveToSheet('review',{Reviewer:userData.name||"Anonymous",Stars:stars,Text:text});
+  popup.style.display='none';alert('Thank you for your feedback!');
+}
+</script>
+</body>
+</html>

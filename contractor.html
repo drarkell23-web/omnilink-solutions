@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>OmniLink Contractors Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:Poppins;background:linear-gradient(160deg,#0b0a18,#141229);color:#f6f7fb;padding:20px;text-align:center}
+.card{max-width:700px;margin:auto;background:#18152f;padding:20px;border-radius:16px;box-shadow:0 0 30px rgba(0,0,0,.5);margin-top:20px}
+input,textarea{width:100%;padding:10px;margin:6px 0;border:none;border-radius:8px;background:#29244b;color:#fff}
+button{background:linear-gradient(135deg,#8a5cff,#6a4cff);color:#0a061b;border:none;padding:10px 16px;font-weight:700;border-radius:10px;cursor:pointer}
+.ok{color:#9cfab9;margin-top:10px;display:none}
+table{width:100%;border-collapse:collapse;margin-top:20px}
+th,td{padding:10px;border-bottom:1px solid #ffffff1a;font-size:14px}
+th{color:#b0b3c7}
+</style>
+</head>
+<body>
+<h1>🧰 OmniLink Contractor Portal</h1>
+<p>Join the network and view your job leads and reviews.</p>
+
+<div class="card">
+  <h2>Join as a Contractor</h2>
+  <input id="bizName" placeholder="Business / Contractor Name">
+  <input id="ownerName" placeholder="Contact Person">
+  <input id="bizEmail" placeholder="Email">
+  <input id="bizPhone" placeholder="Phone Number">
+  <input id="trade" placeholder="Trade (e.g. Plumbing, Electrical)">
+  <input id="areas" placeholder="Service Areas (e.g. Durban, JHB)">
+  <textarea id="notes" placeholder="Additional Details"></textarea>
+  <button id="submit">Submit</button>
+  <div class="ok" id="ok">✅ Submitted successfully!</div>
+</div>
+
+<div class="card">
+  <h2>Your Jobs</h2>
+  <table><thead><tr><th>Client</th><th>Service</th><th>Area</th><th>Status</th></tr></thead>
+  <tbody id="jobs"></tbody></table>
+</div>
+
+<div class="card">
+  <h2>Your Reviews</h2>
+  <div id="reviews">No reviews yet.</div>
+</div>
+
+<script>
+const SHEET_WEBHOOK = ""; // paste your Google Script URL
+
+async function saveToSheet(type,payload){
+  await fetch(SHEET_WEBHOOK,{method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify({type,payload})});
+}
+async function loadFromSheet(sheet){
+  const res = await fetch(SHEET_WEBHOOK+"?sheet="+sheet);
+  return (await res.json()).rows||[];
+}
+document.getElementById('submit').onclick=async()=>{
+  const data={name:bizName.value,owner:ownerName.value,email:bizEmail.value,phone:bizPhone.value,trade:trade.value,areas:areas.value,notes:notes.value};
+  await saveToSheet('contractor',data);
+  document.getElementById('ok').style.display='block';
+  setTimeout(()=>document.getElementById('ok').style.display='none',3000);
+  loadJobs();loadReviews();
+};
+async function loadJobs(){
+  const jobs=await loadFromSheet('Leads');
+  const body=document.getElementById('jobs');
+  body.innerHTML=jobs.map(j=>`<tr><td>${j.Name}</td><td>${j.Service}</td><td>${j.Area}</td><td>${j.Status||'New'}</td></tr>`).join('');
+}
+async function loadReviews(){
+  const revs=await loadFromSheet('Reviews');
+  const r=document.getElementById('reviews');
+  if(!revs.length){r.textContent='No reviews yet.';return;}
+  r.innerHTML=revs.map(rv=>`<p>⭐${rv.Stars} — "${rv.Text}"<br><small>${rv.Reviewer}</small></p>`).join('');
+}
+loadJobs();loadReviews();
+</script>
+</body>
+</html>
