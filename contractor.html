@@ -1,68 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>OmniLink Contractor Dashboard</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>OmniLink Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-body{font-family:Poppins,system-ui;background:#0b0a18;color:#fff;margin:0;padding:0;text-align:center;}
-h1{margin:20px 0;color:#8a5cff;}
-.container{width:min(1000px,94vw);margin:auto;padding:20px;text-align:left;}
-.card{background:#1a1731;border-radius:12px;padding:20px;margin:15px 0;box-shadow:0 4px 14px rgba(0,0,0,.4);}
-label{display:block;margin:8px 0 4px;color:#ccc;}
-input,textarea,select{width:100%;padding:8px;border:none;border-radius:6px;background:#29244b;color:#fff;margin-bottom:10px;}
-button{background:linear-gradient(135deg,#8a5cff,#6a4cff);color:#0a061b;border:none;padding:10px 14px;border-radius:8px;font-weight:700;cursor:pointer;}
-button:hover{opacity:.9;}
-.review{margin-top:10px;font-size:14px;padding:10px;border-left:3px solid #8a5cff;background:#231f41;border-radius:8px;}
+body{font-family:Poppins,system-ui;background:#0b0a18;color:#fff;margin:0;padding:0}
+header{display:flex;justify-content:space-between;align-items:center;width:min(1200px,94vw);margin:24px auto}
+.badge{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;font-weight:900;
+  background:linear-gradient(135deg,#8a5cff,#6a4cff);color:#0b0620}
+.btn{background:linear-gradient(135deg,#8a5cff,#6a4cff);color:#0b0620;border:none;font-weight:700;
+  padding:10px 14px;border-radius:10px;cursor:pointer;transition:.3s}
+.btn:hover{transform:translateY(-2px)}
+.grid{width:min(1200px,94vw);margin:auto;display:grid;grid-template-columns:1.2fr 0.8fr;gap:22px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:#18152f;border-radius:16px;padding:18px;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+h2{margin-bottom:10px}
+label{display:block;margin:10px 0 4px;color:#bfc3e0}
+input,select{width:100%;padding:8px;border:none;border-radius:8px;background:#29244b;color:#fff}
+canvas{margin-top:12px;background:#1b1831;border-radius:12px}
 </style>
 </head>
 <body>
-<h1>OmniLink Contractor Dashboard</h1>
-<div class="container">
-  <div class="card">
-    <h3>👷 Contractor Sign Up</h3>
-    <label>Business Name</label><input id="bizName">
-    <label>Trade Category</label><input id="bizCategory">
-    <label>Service Areas</label><input id="bizArea">
-    <label>Phone</label><input id="bizPhone">
-    <label>Email</label><input id="bizEmail">
-    <button onclick="registerContractor()">Register</button>
-    <p id="okMsg" style="display:none;color:#8a5cff;font-weight:700;">✅ Registered Successfully!</p>
-  </div>
+<header>
+ <div style="display:flex;align-items:center;gap:12px">
+   <div class="badge">OL</div><h1>Contractor Dashboard</h1>
+ </div>
+ <button class="btn" onclick="location.href='/'">Home</button>
+</header>
 
-  <div class="card">
-    <h3>📋 Job List</h3>
-    <div id="jobList">No jobs yet.</div>
-  </div>
+<div class="grid">
+ <div class="card">
+  <h2>👷 Profile / Register</h2>
+  <label>Business Name</label><input id="c_name">
+  <label>Category</label><select id="c_cat"></select>
+  <label>Area</label><input id="c_area">
+  <label>Phone</label><input id="c_phone">
+  <label>Email</label><input id="c_email">
+  <label>Rating</label><input id="c_rate" type="number" min="1" max="5" step="0.1" value="4.8">
+  <button class="btn" onclick="saveContractor()">Save</button>
+  <p id="msg" style="color:#23d5ab;display:none">✅ Saved!</p>
+ </div>
+ <div class="card">
+  <h2>📊 Analytics</h2>
+  <canvas id="chart" height="200"></canvas>
+ </div>
+</div>
 
-  <div class="card">
-    <h3>⭐ Client Reviews</h3>
-    <div id="reviews">
-      <div class="review">"Excellent plumber, quick and neat!" — Thandi M.</div>
-      <div class="review">"Fast response and fair pricing." — Luke P.</div>
-    </div>
-  </div>
+<div class="card" style="width:min(1200px,94vw);margin:20px auto">
+ <h2>📝 Leads / Jobs</h2>
+ <div id="jobs"></div>
 </div>
 
 <script>
-const TELEGRAM_BOT_TOKEN = "8590267654:AAG24Oo6GlAUjVxZ1JXjNLNq_LZ5gIK4BDs"; 
-const TELEGRAM_CHAT_IDS = ["8187670531" "8558139331"];
-
-async function sendTelegram(msg){
-  if(!TELEGRAM_BOT_TOKEN)return;
-  const url=`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
-  for(const id of TELEGRAM_CHAT_IDS){
-    await fetch(url,{method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:id,text:msg,parse_mode:"Markdown"})});
-  }
+const CATS={"Home & Maintenance":["Plumbing","Electrical","Roofing","Painting","Handyman","Landscaping"],
+"Business & Consulting":["Marketing","Design","Accounting"],
+"Automotive":["Panel Beating","Tyres","Towing"],
+"Health & Wellness":["Training","Massage","Nutrition"]};
+const sel=document.getElementById('c_cat');
+for(const [g,list] of Object.entries(CATS)){const og=document.createElement('optgroup');og.label=g;list.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;og.appendChild(o)});sel.appendChild(og);}
+function saveContractor(){
+ const me={id:Date.now(),name:c_name.value,category:c_cat.value,area:c_area.value,phone:c_phone.value,email:c_email.value,rating:c_rate.value};
+ const store=JSON.parse(localStorage.getItem("omni_contractors")||"{}");
+ store[me.category]=store[me.category]||[];store[me.category].push(me);
+ localStorage.setItem("omni_contractors",JSON.stringify(store));
+ msg.style.display='block';setTimeout(()=>msg.style.display='none',3000);
+ renderJobs();drawChart();
 }
-
-async function registerContractor(){
- const b=bizName.value,c=bizCategory.value,a=bizArea.value,p=bizPhone.value,e=bizEmail.value;
- const msg=`🚨 *NEW CONTRACTOR ALERT*\n🏢 ${b}\n🛠️ ${c}\n📍 ${a}\n📞 ${p}\n📧 ${e}`;
- await sendTelegram(msg);
- okMsg.style.display='block';
+function renderJobs(){
+ const jobs=JSON.parse(localStorage.getItem("omni_jobs")||"[]");
+ jobsEl.innerHTML=jobs.map(j=>`<div style="margin:8px 0;padding:10px;background:#231f41;border-radius:10px">
+  <b>${j.service}</b> — ${j.name} 📞${j.phone}<br><small>${j.area}</small></div>`).join('')||'<p>No jobs yet.</p>';
 }
+const jobsEl=document.getElementById('jobs');renderJobs();
+/* analytics */
+function drawChart(){
+ const ctx=document.getElementById('chart');
+ new Chart(ctx,{type:'bar',data:{labels:['Leads','Sales','Conversion %'],
+ datasets:[{label:'This Month',data:[Math.random()*50+20,Math.random()*20+10,Math.random()*40+30],
+ backgroundColor:['#8a5cff','#6a4cff','#23d5ab']}]},options:{plugins:{legend:{display:false}}}});
+}
+drawChart();
 </script>
 </body>
 </html>
