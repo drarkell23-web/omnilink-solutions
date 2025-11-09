@@ -2,194 +2,157 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OmniLink Solutions — Smart Service Network</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>OmniLink Solutions — Smarter Service Network</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-:root {
-  --bg1:#0b0a18; --bg2:#141229; --ink:#f6f7fb; --muted:#c6c9de;
-  --brand:#8a5cff; --brand2:#6a4cff; --chip:#231f41;
-  --shadow:0 14px 32px rgba(0,0,0,.35);
+:root{
+  --bg1:#0b0a18;--bg2:#141229;--ink:#f6f7fb;--muted:#bfc3e0;
+  --brand:#8a5cff;--brand2:#6a4cff;--ok:#23d5ab;--chip:#231f41;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{
   font-family:Poppins,system-ui;
-  color:var(--ink);
-  background:radial-gradient(circle at top left,#1a1631,#0b0a18);
-  overflow-x:hidden;
-  min-height:100vh;
-  background-attachment:fixed;
+  background:radial-gradient(circle at 15% -10%,#1a1631 0%,#0b0a18 60%,#05050a 100%);
+  color:var(--ink);overflow-x:hidden;min-height:100vh;
 }
 body::before{
-  content:"";position:fixed;inset:0;z-index:-1;
-  background:linear-gradient(120deg,rgba(138,92,255,0.1),rgba(23,214,250,0.1),rgba(0,0,0,0.2));
-  background-size:300% 300%;
-  animation:float 15s ease infinite;
+  content:"";position:fixed;inset:0;background:
+    radial-gradient(600px 400px at 20% 20%,rgba(138,92,255,.15),transparent 60%),
+    radial-gradient(700px 500px at 80% 10%,rgba(34,230,176,.08),transparent 60%);
+  filter:blur(8px);z-index:-1;animation:float 18s ease-in-out infinite alternate;
 }
-@keyframes float{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-
-h1,h2{margin:0;}
-header{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:20px;width:min(1200px,94vw);margin:auto;
+@keyframes float{0%{transform:translateY(0)}100%{transform:translateY(-25px)}}
+h1,h2{margin:0}
+.btn{
+  background:linear-gradient(135deg,var(--brand),var(--brand2));
+  color:#0a061b;border:none;font-weight:700;
+  padding:10px 16px;border-radius:10px;cursor:pointer;
+  box-shadow:0 8px 20px rgba(0,0,0,.3);transition:.3s;
 }
-.badge{
-  width:60px;height:60px;border-radius:16px;display:grid;place-items:center;
-  background:linear-gradient(135deg,var(--brand),var(--brand2));font-weight:900;color:#0a061b;
-  box-shadow:0 10px 26px #8a5cff55;
-}
-.contractor-btn{
-  background:linear-gradient(135deg,var(--brand),var(--brand2));color:#0a061b;border:none;font-weight:800;
-  padding:10px 16px;border-radius:10px;cursor:pointer;box-shadow:var(--shadow);
-  transition:.3s;
-}
-.contractor-btn:hover{transform:scale(1.05);opacity:.9}
-.hero{text-align:center;margin-top:20px;}
-.hero p{color:var(--muted);margin-top:8px;font-size:15px}
-
-/* Services */
-.services{margin-top:40px;width:min(1200px,94vw);margin:auto;}
-.category{margin-top:40px;}
-.category h2{text-align:center;margin-bottom:12px;}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:18px;}
-.bubble{
-  background:#231f41;color:#fff;padding:14px 12px;border-radius:50px;cursor:pointer;
-  font-weight:600;text-align:center;box-shadow:0 3px 6px rgba(0,0,0,.3);transition:.3s;
-}
-.bubble:hover{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#0a061b;transform:scale(1.08)}
-
-/* Chatbot */
-.chat{position:fixed;bottom:100px;right:20px;background:#18152f;border:1px solid #ffffff1a;border-radius:14px;padding:15px;width:340px;max-height:500px;display:none;flex-direction:column;box-shadow:var(--shadow);z-index:50}
-.chat-log{flex:1;overflow-y:auto;font-size:14px;margin-bottom:10px}
-.msg{background:var(--chip);padding:8px 10px;border-radius:10px;margin-bottom:6px;width:fit-content;max-width:80%}
-.bot{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#0e0727}
-.user{align-self:flex-end;background:#2e2b48}
-.chat-input{border:none;border-radius:10px;padding:10px;width:100%;background:#29244b;color:#fff}
-
-/* Contractor Popup */
-.contractors-popup{position:fixed;inset:0;background:#000a;display:none;place-items:center;z-index:90;}
-.contractors-box{background:#18152f;padding:20px;border-radius:18px;width:min(420px,94vw);box-shadow:var(--shadow);text-align:center;}
-.contractors-list div{background:#29244b;margin:8px 0;padding:10px;border-radius:8px;text-align:left;}
-canvas#confetti{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:100}
-.footer{text-align:center;margin:40px 0;color:var(--muted);font-size:14px}
+.btn:hover{transform:translateY(-2px);opacity:.9}
+header{display:flex;justify-content:space-between;align-items:center;
+  width:min(1200px,94vw);margin:24px auto}
+.brand{display:flex;align-items:center;gap:12px}
+.badge{width:60px;height:60px;border-radius:16px;display:grid;place-items:center;
+  font-weight:900;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#0b0620}
+.hero{text-align:center;margin-top:30px}
+.hero h1{font-size:clamp(28px,4vw,46px)}
+.hero p{color:var(--muted);margin-top:8px;font-size:16px}
+.stats{display:flex;justify-content:center;gap:20px;margin:30px auto;width:min(900px,90vw);flex-wrap:wrap}
+.stat{background:rgba(255,255,255,.05);backdrop-filter:blur(8px);padding:16px 26px;border-radius:16px;text-align:center;transition:.3s}
+.stat:hover{transform:translateY(-3px)}
+.stat h2{font-size:28px}
+.services{width:min(1200px,94vw);margin:50px auto}
+.category{margin-top:40px}
+.category h3{text-align:center;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.bubble{background:#231f41;color:#fff;padding:12px;border-radius:50px;text-align:center;font-weight:600;cursor:pointer;transition:.25s}
+.bubble:hover{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#0a061b;transform:scale(1.06)}
+.chat{position:fixed;bottom:100px;right:20px;width:360px;max-height:560px;
+  display:none;flex-direction:column;background:#18152f;border-radius:16px;
+  padding:14px;box-shadow:0 8px 22px rgba(0,0,0,.4);border:1px solid #ffffff1a;z-index:60}
+.chat-log{flex:1;overflow-y:auto;font-size:14px}
+.msg{background:#29244b;padding:9px 11px;border-radius:12px;margin:6px 0;max-width:82%}
+.bot{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#0a0620}
+.user{align-self:flex-end;background:#2f2a4e}
+.chat-input{border:none;border-radius:10px;padding:10px;background:#29244b;color:#fff;margin-top:6px}
+canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:100}
+footer{text-align:center;margin:50px 0;color:var(--muted);font-size:14px}
 </style>
 </head>
 <body>
 <canvas id="confetti"></canvas>
-
 <header>
-  <div style="display:flex;align-items:center;gap:12px">
+  <div class="brand">
     <div class="badge">OL</div>
     <div>
       <h1>OmniLink Solutions</h1>
-      <p>Smart, Simple & Affordable Solutions for Every Service</p>
+      <small style="color:var(--muted)">Smarter, faster, connected services</small>
     </div>
   </div>
-  <button class="contractor-btn" id="goContractors">🧰 Contractors</button>
+  <button class="btn" id="contractorBtn">Dashboard</button>
 </header>
 
 <section class="hero">
-  <h2>Choose the service you need today!</h2>
-  <p>All trades. All industries. One intelligent network.</p>
+  <h1>Find, Connect, and Manage — All in One Place</h1>
+  <p>From plumbers to designers, OmniLink brings every service to your fingertips.</p>
 </section>
 
-<section class="services" id="serviceContainer"></section>
+<div class="stats">
+  <div class="stat"><h2 id="statLeads">0</h2><p>Leads Today</p></div>
+  <div class="stat"><h2 id="statClients">0</h2><p>Active Clients</p></div>
+  <div class="stat"><h2 id="statPartners">0</h2><p>Partner Companies</p></div>
+</div>
 
-<!-- Chat -->
+<section class="services" id="services"></section>
+
 <div class="chat" id="chat">
+  <div style="font-weight:700;margin-bottom:6px">💬 Omni Assistant</div>
   <div class="chat-log" id="chatLog"></div>
-  <input id="chatInput" class="chat-input" placeholder="Type your message..." autocomplete="off">
+  <input id="chatInput" class="chat-input" placeholder="Type here…" autocomplete="off">
 </div>
 
-<!-- Contractor popup -->
-<div class="contractors-popup" id="contractorPopup">
-  <div class="contractors-box">
-    <h3>🏆 Contractors Near You</h3>
-    <div class="contractors-list" id="contractorList"></div>
-    <button class="contractor-btn" onclick="closePopup()">Close</button>
-  </div>
-</div>
-
-<footer class="footer">© 2025 OmniLink Solutions — Smart Service Network</footer>
+<footer>© 2025 OmniLink Solutions — Empowering Local Services</footer>
 
 <script>
-/* CONFIG */
-const TELEGRAM_BOT_TOKEN = "8590267654:AAG24Oo6GlAUjVxZ1JXjNLNq_LZ5gIK4BDs"; 
-const TELEGRAM_CHAT_IDS = ["8187670531" "8558139331"];
-const SHEET_WEBHOOK = "https://script.google.com/macros/s/AKfycbxaVLWppY0tr72qKQblrSOtZkeku-kozZItnAFF_BnJwGZbgtpkYeQaSI6Ga1z2a9W8/exec";
+const TELEGRAM_BOT_TOKEN = ""; // fill later
+const TELEGRAM_CHAT_IDS = [];  // fill later
 
-/* Confetti */
-const canvas=document.getElementById('confetti'),ctx=canvas.getContext('2d');
-function resize(){canvas.width=innerWidth;canvas.height=innerHeight;}
-resize();window.addEventListener('resize',resize);
-function confettiBurst(){
- const colors=['#8a5cff','#6a4cff','#23d5ab','#7ee6d5'];
- const parts=Array.from({length:100},()=>({x:innerWidth/2,y:innerHeight,r:3+Math.random()*5,dx:-6+Math.random()*12,dy:-12-Math.random()*6,color:colors[Math.floor(Math.random()*colors.length)],life:120}));
- let frame=0;(function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);
- for(const p of parts){ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,2*Math.PI);ctx.fillStyle=p.color;ctx.fill();p.x+=p.dx;p.y+=p.dy;p.dy+=0.2;p.life--;}
- frame++;if(frame<120){requestAnimationFrame(draw);}else{ctx.clearRect(0,0,canvas.width,canvas.height);}})();
-}
+/* ---------- confetti ---------- */
+const c=document.getElementById('confetti'),ctx=c.getContext('2d');
+function resize(){c.width=innerWidth;c.height=innerHeight;}resize();addEventListener('resize',resize);
+function burst(){const colors=['#8a5cff','#6a4cff','#23d5ab','#7ee6d5','#ffd166'];
+ const parts=[...Array(100)].map(()=>({x:innerWidth/2,y:innerHeight-40,r:3+Math.random()*5,dx:-7+Math.random()*14,dy:-10-Math.random()*8,color:colors[Math.floor(Math.random()*colors.length)],life:120}));
+ let t=0;(function draw(){ctx.clearRect(0,0,c.width,c.height);for(const p of parts){ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,2*Math.PI);ctx.fillStyle=p.color;ctx.fill();p.x+=p.dx;p.y+=p.dy;p.dy+=0.2;p.life--;}t++;if(t<120)requestAnimationFrame(draw);})();}
 
-/* Navigation */
-document.getElementById('goContractors').onclick=()=>window.location.href='contractor.html';
+/* ---------- stats animation ---------- */
+let leads=120,clients=84,partners=37;
+function animateStat(id,target){let n=0;const el=document.getElementById(id);const int=setInterval(()=>{n++;el.textContent=n;if(n>=target)clearInterval(int);},15);}
+animateStat('statLeads',leads);animateStat('statClients',clients);animateStat('statPartners',partners);
 
-/* Categories */
-const categories={
- "Home & Maintenance":["Plumbing","Electrical","Roofing","Painting","Cleaning","Carpentry","Flooring","Landscaping","Pest Control","Solar Installation","Air Conditioning","Pool Maintenance","Handyman Services"],
- "Property & Construction":["General Building","Renovations","Property Sales","Security Systems","Windows & Doors","Real Estate","Paving","Tiling","Waterproofing"],
- "Technical & IT":["CCTV Setup","IT Support","Web Design","Networking","Software Installations","Data Recovery","Tech Repairs","Cloud Backup"],
- "Automotive & Transport":["Vehicle Servicing","Towing","Tyre Replacement","Panel Beating","Auto Electrical","Truck Repairs","Car Wash"],
- "Cleaning & Hospitality":["Office Cleaning","Home Cleaning","Pest Control","Janitorial","Waste Removal","Laundry","Event Setup"],
- "Health & Wellness":["Gym Installation","Physiotherapy","Nutrition","Personal Training","Medical Equipment Repair"],
- "Business & Consulting":["Accounting","Marketing","Insurance","Financial Consulting","Printing","Courier","Staffing"],
- "Creative & Media":["Photography","Videography","Branding","Social Media Management","Interior Design","Graphic Design","Advertising"],
- "Education & Training":["Tutoring","Driving Schools","Language Training","Vocational Training","Online Courses"],
- "Security & Safety":["Fire Systems","Alarm Systems","Guarding","Surveillance","Emergency Repairs","Locksmith Services"]
+/* ---------- categories ---------- */
+const cats={
+ "Home & Maintenance":["Plumbing","Electrical","Roofing","Painting","Carpentry","Flooring","Handyman","Landscaping","Pest Control","Solar Installation","Air Conditioning"],
+ "Business & Consulting":["Accounting","Marketing","Graphic Design","Branding","Courier","Staffing","IT Support"],
+ "Automotive":["Panel Beating","Tyres","Car Wash","Towing","Battery Assist"],
+ "Health & Wellness":["Personal Training","Massage","Nutrition","Yoga","Physiotherapy"]
 };
-const container=document.getElementById('serviceContainer');
-for(const [cat,arr] of Object.entries(categories)){
- const div=document.createElement('div');
- div.className='category';
- div.innerHTML=`<h2>${cat}</h2><div class='grid'>${arr.map(s=>`<div class='bubble' onclick='startChat("${s}")'>${s}</div>`).join('')}</div>`;
- container.appendChild(div);
+const box=document.getElementById('services');
+for(const [cat,list] of Object.entries(cats)){
+ const sec=document.createElement('div');sec.className='category';
+ sec.innerHTML=`<h3>${cat}</h3><div class='grid'>${list.map(s=>`<div class='bubble' onclick="startChat('${s}')">${s}</div>`).join('')}</div>`;
+ box.appendChild(sec);
 }
 
-/* Chatbot */
-const chat=document.getElementById('chat'),chatLog=document.getElementById('chatLog'),chatInput=document.getElementById('chatInput');
-let step=0,userData={},service="";
-function addMsg(text,cls="bot"){const d=document.createElement('div');d.className='msg '+cls;d.textContent=text;chatLog.appendChild(d);chatLog.scrollTop=chatLog.scrollHeight;}
-async function botSay(text,delay=700){await new Promise(r=>setTimeout(r,delay));addMsg(text,'bot');}
-function startChat(s){service=s;chat.style.display='flex';chatLog.innerHTML='';userData={};step=0;botSay(`👋 Hey there! I’m Omni, your assistant for ${s}.`);botSay("What's your name?");}
-chatInput.addEventListener('keydown',async e=>{
+/* ---------- chatbot ---------- */
+const chat=document.getElementById('chat'),log=document.getElementById('chatLog'),input=document.getElementById('chatInput');
+let step=0,data={},service="";
+function addMsg(t,c="bot"){const d=document.createElement('div');d.className='msg '+c;d.textContent=t;log.appendChild(d);log.scrollTop=log.scrollHeight;}
+function say(t,d=500){setTimeout(()=>addMsg(t,'bot'),d);}
+function startChat(s){service=s;chat.style.display='flex';log.innerHTML='';data={service:s};step=0;say(`Hi 👋 I’m Omni. Looking for ${s}?`);say("What's your name?");}
+input.addEventListener('keydown',e=>{
  if(e.key!=="Enter")return;
- const val=chatInput.value.trim();if(!val)return;
- addMsg(val,'user');chatInput.value='';
+ const v=input.value.trim();if(!v)return;
+ addMsg(v,'user');input.value='';
  switch(step){
-  case 0:userData.name=val;await botSay(`Nice to meet you, ${val}! 📞 What's your phone number?`);step++;break;
-  case 1:userData.phone=val;await botSay("📍 What area are you in?");step++;break;
-  case 2:userData.area=val;await botSay("📝 Describe your issue briefly:");step++;break;
-  case 3:userData.notes=val;
-   await botSay("✅ Perfect! Here are the top contractors in your area:");
-   showContractors();confettiBurst();
-   await botSay("Thank you! Your request has been sent to OmniLink. We'll contact you soon.");
-   setTimeout(()=>chat.style.display='none',6000);
-   break;
+  case 0:data.name=v;say(`Nice to meet you, ${v}! 📞 Your phone number?`);step++;break;
+  case 1:data.phone=v;say("📍 Which area are you in?");step++;break;
+  case 2:data.area=v;say("📝 Describe your issue briefly.");step++;break;
+  case 3:data.desc=v;showContractors();step++;break;
  }
 });
-
-/* Contractor popup */
-const contractorPopup=document.getElementById('contractorPopup');
 function showContractors(){
- const list=document.getElementById('contractorList');
- list.innerHTML=`
-   <div>🔧 ${service} Experts Inc. — 4.9⭐</div>
-   <div>🧰 ${service} Masters SA — 4.8⭐</div>
-   <div>🏆 ${service} ProFix Team — 4.7⭐</div>
-   <div>⚙️ ${service} Solutions — 4.6⭐</div>`;
- contractorPopup.style.display='grid';
+ const all=JSON.parse(localStorage.getItem("omni_contractors")||"{}");
+ const arr=all[service]||[];
+ if(arr.length){
+   say("Here are some available contractors:");
+   arr.slice(0,5).forEach(c=>say(`🏆 ${c.name} (${c.area}) ⭐${c.rating||'4.7'}`));
+ }else say("We'll dispatch our trusted partner for you.");
+ say("✅ Request sent to OmniLink team — thank you!");burst();
 }
-function closePopup(){contractorPopup.style.display='none';}
+document.getElementById('contractorBtn').onclick=()=>location.href='/contractor.html';
 </script>
 </body>
 </html>
-
