@@ -1,66 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>OmniLink — Contractor Signup</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>OmniLink Contractors</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
-body{font-family:Poppins,system-ui;background:#0b0a18;color:#fff;margin:0;display:flex;min-height:100vh;align-items:center;justify-content:center}
-.card{background:#18152f;border-radius:16px;padding:28px;box-shadow:0 8px 26px rgba(0,0,0,.35);width:min(440px,94vw)}
-input,select{width:100%;padding:10px;margin:8px 0;background:#29244b;border:none;border-radius:10px;color:#fff}
-button{width:100%;padding:10px;background:linear-gradient(135deg,#8a5cff,#6a4cff);border:none;border-radius:10px;font-weight:700;color:#0b0620;cursor:pointer}
-button:hover{opacity:.92}
-h1{text-align:center;margin-bottom:8px}
-.small{color:#bfc3e0;font-size:13px;text-align:center}
+body{font-family:Poppins,system-ui;background:#0b0a18;color:#fff;margin:0;text-align:center;}
+.card{background:#18152f;width:min(450px,94vw);margin:40px auto;border-radius:16px;box-shadow:0 8px 26px rgba(0,0,0,.35);padding:20px;}
+h2{margin:10px 0;}
+input{width:100%;padding:10px;margin:8px 0;background:#29244b;border:none;border-radius:10px;color:#fff;}
+button{background:linear-gradient(135deg,#8a5cff,#6a4cff);border:none;color:#0b0620;font-weight:700;padding:10px 16px;border-radius:10px;cursor:pointer;width:100%;}
+button:hover{opacity:.9;}
+.switch{margin:10px auto;display:flex;justify-content:center;gap:10px;}
+.switch button{width:auto;padding:6px 12px;border-radius:8px;}
+#dashboard{display:none;}
+table{width:100%;border-collapse:collapse;margin-top:15px;}
+td,th{border-bottom:1px solid #333;padding:8px;}
 </style>
 </head>
 <body>
-<div class="card">
-  <h1>Join OmniLink</h1>
-  <div class="small">Provide your business details to get verified.</div>
-  <input id="cname" placeholder="Company Name">
-  <input id="cowner" placeholder="Owner Name">
-  <select id="cservice"></select>
-  <input id="carea" placeholder="Service Area">
-  <input id="cphone" placeholder="Phone">
-  <input id="ctelegram" placeholder="Your Telegram Chat ID (optional)">
-  <input id="cemail" placeholder="Email">
-  <input id="cpass" type="password" placeholder="Password">
-  <button onclick="signup()">Submit Application</button>
-  <div id="ok" class="small" style="display:none;color:#23d5ab;margin-top:8px">
-    ✅ Application submitted. We'll review and email your token soon.
-  </div>
+<h1>OmniLink Contractor Portal</h1>
+<div class="switch">
+  <button onclick="show('signup')">Sign Up</button>
+  <button onclick="show('login')">Login</button>
+  <button onclick="show('dashboard')">Dashboard</button>
+</div>
+
+<div id="signup" class="card">
+  <h2>Contractor Signup</h2>
+  <input id="bizName" placeholder="Company Name">
+  <input id="email" placeholder="Email">
+  <input id="service" placeholder="Service Type">
+  <input id="telegram" placeholder="Telegram ID">
+  <button onclick="signup()">Submit</button>
+  <p id="sMsg"></p>
+</div>
+
+<div id="login" class="card" style="display:none;">
+  <h2>Contractor Login</h2>
+  <input id="loginEmail" placeholder="Email">
+  <button onclick="login()">Login</button>
+  <p id="lMsg"></p>
+</div>
+
+<div id="dashboard" class="card">
+  <h2>Dashboard</h2>
+  <p>Welcome, <span id="userName"></span>!</p>
+  <h3>📊 Your Leads</h3>
+  <table id="leadsTable"><tr><th>Client</th><th>Service</th><th>Area</th></tr></table>
 </div>
 
 <script>
-const SERVICES=["Plumbing","Electrical","Roofing","Painting","Carpentry","Handyman","Flooring","Landscaping","Security Systems","IT Support","Catering"];
-cservice.innerHTML=SERVICES.map(s=>`<option>${s}</option>`).join('');
+const TELEGRAM_BOT_TOKEN = "";
+const ADMIN_CHAT_ID = "";
 
-const ADMIN_BOT_TOKEN="YOUR_MASTER_BOT_TOKEN_HERE";   // your bot token
-const ADMIN_CHAT_ID="YOUR_MASTER_CHAT_ID_HERE";       // your chat id
-
+function show(section){
+  ['signup','login','dashboard'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById(section).style.display='block';
+}
 function signup(){
-  const name=cname.value.trim(), owner=cowner.value.trim(), service=cservice.value, area=carea.value.trim(), phone=cphone.value.trim(), email=cemail.value.trim(), pass=cpass.value.trim(), telegramId=ctelegram.value.trim();
-  if(!name||!owner||!service||!area||!phone||!email||!pass){alert("Please complete all fields.");return;}
-  
-  const id='C'+Math.random().toString(36).slice(2,8);
-  const data={id,name,owner,service,area,phone,email,telegramId};
-  
-  // Store locally
-  const db=JSON.parse(localStorage.getItem('omni_pending')||'[]');
-  db.push(data); localStorage.setItem('omni_pending',JSON.stringify(db));
-  
-  // Send Telegram alert to ADMIN
-  const msg=`🧱 *NEW CONTRACTOR SIGNUP*\nCompany: ${name}\nOwner: ${owner}\nService: ${service}\nArea: ${area}\nPhone: ${phone}\nEmail: ${email}\nTelegram ID: ${telegramId||'N/A'}`;
-  if(ADMIN_BOT_TOKEN && ADMIN_CHAT_ID){
-    fetch(`https://api.telegram.org/bot${ADMIN_BOT_TOKEN}/sendMessage`,{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({chat_id:ADMIN_CHAT_ID,parse_mode:'Markdown',text:msg})
-    });
-  }
-
-  ok.style.display='block';
-  cname.value=cowner.value=carea.value=cphone.value=cemail.value=cpass.value=ctelegram.value='';
+  const n=bizName.value,e=email.value,s=service.value,t=telegram.value;
+  if(!n||!e||!s||!t){sMsg.textContent="Please fill all fields.";return;}
+  const msg=`🚨 NEW CONTRACTOR SIGNUP\nCompany: ${n}\nEmail: ${e}\nService: ${s}\nTelegram: ${t}`;
+  fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,{
+    method:"POST",headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({chat_id:ADMIN_CHAT_ID,text:msg})
+  });
+  sMsg.textContent="✅ Signup sent for review!";
+}
+function login(){
+  const e=loginEmail.value;
+  const data=localStorage.getItem('contractors');
+  if(!data){lMsg.textContent="No users found.";return;}
+  const users=JSON.parse(data);
+  const user=users.find(u=>u.email===e);
+  if(!user){lMsg.textContent="User not found.";return;}
+  localStorage.setItem('loggedUser',JSON.stringify(user));
+  document.getElementById('userName').textContent=user.name||user.company;
+  show('dashboard');
 }
 </script>
 </body>
