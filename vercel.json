@@ -1,11 +1,16 @@
 {
   "version": 2,
+  "builds": [
+    { "src": "*.html", "use": "@vercel/static" },
+    { "src": "confetti.js", "use": "@vercel/static" }
+  ],
   "routes": [
     { "src": "/contractor", "dest": "/contractor.html" },
     { "src": "/contractor-login", "dest": "/contractor-login.html" },
     { "src": "/contractor-dashboard", "dest": "/contractor-dashboard.html" },
-    { "src": "/login", "dest": "/login.html" },
     { "src": "/dashboard", "dest": "/dashboard.html" },
+    { "src": "/login", "dest": "/login.html" },
+    { "src": "/review", "dest": "/review.html" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
