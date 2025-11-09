@@ -1,11 +1,11 @@
 {
-  "builds": [
-    { "src": "index.html", "use": "@vercel/static" },
-    { "src": "contractor.html", "use": "@vercel/static" }
-  ],
+  "version": 2,
   "routes": [
-    { "src": "/contractors", "dest": "/contractor.html" },
     { "src": "/contractor", "dest": "/contractor.html" },
+    { "src": "/contractor-login", "dest": "/contractor-login.html" },
+    { "src": "/contractor-dashboard", "dest": "/contractor-dashboard.html" },
+    { "src": "/login", "dest": "/login.html" },
+    { "src": "/dashboard", "dest": "/dashboard.html" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
