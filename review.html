@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Leave a Review — OmniLink Contractor</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+body{font-family:Poppins,system-ui;background:#0b0a18;color:#fff;margin:0;display:flex;align-items:center;justify-content:center;height:100vh}
+.card{background:#18152f;border-radius:16px;padding:24px;box-shadow:0 8px 26px rgba(0,0,0,.35);width:min(420px,94vw)}
+h1{margin-bottom:6px} input,textarea,select{width:100%;padding:10px;margin:8px 0;background:#29244b;border:none;border-radius:10px;color:#fff}
+button{width:100%;padding:10px;background:linear-gradient(135deg,#8a5cff,#6a4cff);border:none;border-radius:10px;font-weight:700;color:#0b0620;cursor:pointer}
+.small{color:#bfc3e0;font-size:13px}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Leave a Review</h1>
+  <div class="small" id="who"></div>
+  <input id="rname" placeholder="Your name (optional)">
+  <select id="rrating"><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select>
+  <textarea id="rcomment" placeholder="Say something about the service…" rows="4"></textarea>
+  <button onclick="save()">Submit Review</button>
+  <div id="ok" class="small" style="display:none;color:#23d5ab;margin-top:8px">✅ Thanks for your feedback!</div>
+</div>
+<script>
+const id = new URL(location).searchParams.get('id');
+const acc = JSON.parse(localStorage.getItem('omni_accounts')||'{}');
+const contractor = Object.values(acc).find(a=>a.id===id);
+who.textContent = contractor ? `${contractor.name} — ${contractor.service}` : 'Unknown contractor';
+
+function save(){
+  const name=rname.value.trim(), rating=rrating.value, comment=rcomment.value.trim();
+  const db = JSON.parse(localStorage.getItem('omni_reviews')||'{}');
+  db[id] = db[id]||[];
+  db[id].push({name, rating, comment, at:new Date().toISOString()});
+  localStorage.setItem('omni_reviews', JSON.stringify(db));
+  ok.style.display='block';
+  rname.value=rcomment.value='';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>OmniLink — Owner Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+body{font-family:Poppins,system-ui;background:#0b0a18;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;margin:0}
+.card{background:#18152f;border-radius:16px;padding:40px;width:min(400px,94vw);box-shadow:0 8px 26px rgba(0,0,0,.35);text-align:center}
+input{width:100%;padding:10px;margin:10px 0;background:#29244b;border:none;border-radius:10px;color:#fff}
+button{width:100%;padding:10px;background:linear-gradient(135deg,#8a5cff,#6a4cff);border:none;border-radius:10px;font-weight:700;color:#0b0620;cursor:pointer}
+#error{display:none;color:#ff7a7a;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Owner Login</h1>
+  <input id="u" placeholder="Username">
+  <input id="p" placeholder="Password" type="password">
+  <button onclick="login()">Login</button>
+  <div id="error">Incorrect login.</div>
+</div>
+<script>
+const ACC=[{u:'admin',p:'2468'}];
+function login(){
+  const ok = ACC.find(a=>a.u===u.value && a.p===p.value);
+  if(ok){ localStorage.setItem('omni_admin','1'); location.href='dashboard.html'; }
+  else error.style.display='block';
+}
+</script>
+</body>
+</html>
